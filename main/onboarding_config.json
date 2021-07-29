@@ -1,0 +1,19 @@
+{
+  "onboardingConfig": {
+    "deviceOnboardingId": "Kettle",
+    "mnId": "fcRA",
+    "setupId": "002",
+    "vid": "ST_28bb6261-6499-4d4e-a3c0-f46017f7cd4b",
+    "deviceTypeId": "Water heater",
+    "ownershipValidationTypes": [
+      "JUSTWORKS"
+    ],
+    "identityType": "ED25519",
+    "deviceIntegrationProfileKey": {
+      "id": "50f1fe0b-2659-4aba-bb7b-d9da0d37df4c",
+      "majorVersion": 0,
+      "minorVersion": 1
+    },
+    "productId": "ff7fd0a9-3f2f-4643-870d-eac636148daf"
+  }
+}
