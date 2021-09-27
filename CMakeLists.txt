@@ -10,18 +10,14 @@ set(CMAKE_BUILD_PATH "cmake_build/NUCLEO_F446RE/develop/GCC_ARM")
 include(${MBED_PATH}/tools/cmake/app.cmake)
 
 project(${APP_TARGET})
-
 add_subdirectory(${MBED_PATH})
-
 add_executable(${APP_TARGET}
     main.cpp
 )
 
 # возможно можно убрать, когда линковку mbed-os через iot-core делаю
 target_link_libraries(${APP_TARGET} PUBLIC mbed-os)
-
 mbed_set_post_build(${APP_TARGET})
-
 option(VERBOSE_BUILD "Have a verbose build process")
 if(VERBOSE_BUILD)
     set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -29,6 +25,7 @@ endif()
 
 
 
+set(STDK_IOT_CORE_USE_DEFINED_CONFIG "y")
 # copy from generated flags of esp32
 #-------------------------------------------------------
 set(CONFIG_STDK_IOT_CORE "y")
@@ -65,45 +62,13 @@ set(CONFIG_STDK_IOT_CORE_FS_SW_ENCRYPTION "")
 set(CONFIG_STDK_IOT_CORE_FS_HW_ENCRYPTION "y")
 set(CONFIG_STDK_IOT_CORE_NET_MBEDTLS "y")
 set(CONFIG_STDK_IOT_CORE_NET_OPENSSL "")
+
+# link main and iotcore (and mbed-os) libraries
 #-------------------------------------------------------
-set(STDK_IOT_CORE_USE_DEFINED_CONFIG "y")
-set(CONFIG_STDK_IOT_CORE_EASYSETUP_HTTP_USE_SOCKET_API "y")
-
 set(STDK_CORE_PATH "/home/flisoch/git-repos/st-device-sdk-c-ref/iot-core")
-set(STDK_INCLUDE_PATH "/home/flisoch/git-repos/st-device-sdk-c-ref/iot-core/src/include")
-
-#------
-MACRO(HEADER_DIRECTORIES return_list)
-    FILE(GLOB_RECURSE new_list *.h)
-    SET(dir_list "")
-    FOREACH(file_path ${new_list})
-        GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
-        if(NOT "${dir_path}" MATCHES ".*/targets/.*")
-            SET(dir_list ${dir_list} ${dir_path})
-            # message(${dir_path})
-        endif()
-    ENDFOREACH()
-    LIST(REMOVE_DUPLICATES dir_list)
-    SET(${return_list} ${dir_list})
-    # message(${dir_list})
-ENDMACRO()
-
-HEADER_DIRECTORIES(header_dir_list)
-list(LENGTH header_dir_list header_dir_list_count)
-message(STATUS "[INFO] Found ${header_dir_list_count} header directories.")
-
-
-set(STDK_MBED_INCLUDE 
-        "mbed-os/connectivity/lwipstack/lwip/src/include/"
-)
-
-
 add_subdirectory(${STDK_CORE_PATH} iotcore)
 target_link_libraries(iotcore PUBLIC mbed-os)
 target_link_libraries(${APP_TARGET} PUBLIC iotcore)
-
-target_include_directories(iotcore PUBLIC .)
-
 
 
 # load libsodium
@@ -135,8 +100,33 @@ set(CJSON_INCLUDE_PATH ${CMAKE_BUILD_PATH}/_deps/cjson-src/)
 
 
 # include mbed header files paths to iot-core(?!)
-#--------------------------------------------
+#----------------------------------------------
+MACRO(HEADER_DIRECTORIES return_list)
+    FILE(GLOB_RECURSE new_list *.h)
+    SET(dir_list "")
+    FOREACH(file_path ${new_list})
+        GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
+        if(NOT "${dir_path}" MATCHES ".*/targets/.*")
+            SET(dir_list ${dir_list} ${dir_path})
+            # message(${dir_path})
+        endif()
+    ENDFOREACH()
+    LIST(REMOVE_DUPLICATES dir_list)
+    SET(${return_list} ${dir_list})
+    # message(${dir_list})
+ENDMACRO()
+
+HEADER_DIRECTORIES(header_dir_list)
+list(LENGTH header_dir_list header_dir_list_count)
+message(STATUS "[INFO] Found ${header_dir_list_count} header directories.")
+
+set(STDK_MBED_INCLUDE 
+        "mbed-os/connectivity/lwipstack/lwip/src/include/"
+)
+set(MAIN_INCLUDE .)
+
 target_include_directories(iotcore PUBLIC 
+        ${MAIN_INCLUDE}
         ${STDK_MBED_INCLUDE}
         ${SODIUM_INCLUDE_PATH}
         ${CJSON_INCLUDE_PATH}
